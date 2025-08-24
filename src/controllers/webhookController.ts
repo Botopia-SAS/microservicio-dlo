@@ -540,10 +540,10 @@ export class WebhookController {
             </div>
             
             <script>
-                // Redirección automática después de 2 segundos
+                // Redirección automática después de 1 segundo
                 setTimeout(function() {
                     window.location.href = '${whatsappLink}';
-                }, 2000);
+                }, 1000);
                 
                 // También permitir clic manual en el botón
                 document.addEventListener('DOMContentLoaded', function() {

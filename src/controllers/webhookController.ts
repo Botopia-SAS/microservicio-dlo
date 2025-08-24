@@ -291,6 +291,85 @@ export class WebhookController {
                     color: #059669;
                     font-weight: 600;
                 }
+                .transaction-summary {
+                    margin-bottom: 24px;
+                }
+                .summary-card {
+                    background: #f8fafc;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 8px;
+                    padding: 20px;
+                }
+                .summary-row {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 12px;
+                    padding-bottom: 12px;
+                    border-bottom: 1px solid #e5e7eb;
+                }
+                .summary-row:last-child {
+                    margin-bottom: 0;
+                    padding-bottom: 0;
+                    border-bottom: none;
+                }
+                .summary-label {
+                    font-weight: 500;
+                    color: #6b7280;
+                    font-size: 14px;
+                }
+                .summary-value {
+                    color: #111827;
+                    font-weight: 600;
+                    font-size: 14px;
+                    text-align: right;
+                    max-width: 60%;
+                    word-break: break-word;
+                }
+                .completion-notice {
+                    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+                    border: 1px solid #bbf7d0;
+                    border-radius: 8px;
+                    padding: 20px;
+                    margin-bottom: 24px;
+                    text-align: center;
+                }
+                .action-section {
+                    text-align: center;
+                    padding-top: 8px;
+                }
+                .continue-btn {
+                    background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+                    color: white;
+                    text-decoration: none;
+                    padding: 16px 32px;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 12px;
+                    transition: all 0.3s ease;
+                    font-size: 16px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    border: 2px solid transparent;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                }
+                .continue-btn:hover {
+                    background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+                    transform: translateY(-1px);
+                    box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.15);
+                }
+                .continue-icon {
+                    font-size: 18px;
+                    font-weight: bold;
+                }
+                .action-note {
+                    color: #6b7280;
+                    font-size: 12px;
+                    margin-top: 12px;
+                    font-style: italic;
+                }
                 .transaction-details {
                     background: #f8fafc;
                     border-radius: 8px;
@@ -357,10 +436,27 @@ export class WebhookController {
                     .content {
                         padding: 24px 16px;
                     }
-                    .status-row, .detail-row {
+                    .status-row, .detail-row, .summary-row {
                         flex-direction: column;
                         align-items: flex-start;
                         gap: 4px;
+                    }
+                    .summary-value {
+                        max-width: 100%;
+                        text-align: left;
+                        font-size: 13px;
+                    }
+                    .continue-btn {
+                        width: 100%;
+                        justify-content: center;
+                        padding: 14px 24px;
+                        font-size: 14px;
+                    }
+                    .header h1 {
+                        font-size: 20px;
+                    }
+                    .header p {
+                        font-size: 14px;
                     }
                 }
             </style>
@@ -379,34 +475,63 @@ export class WebhookController {
                             <span class="status-label">Estado de la transacción</span>
                             <span class="status-value">Completado</span>
                         </div>
+                        <div class="status-row">
+                            <span class="status-label">Fecha de procesamiento</span>
+                            <span class="status-value">${new Date().toLocaleDateString('es-ES', { 
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            })}</span>
+                        </div>
                     </div>
                     
-                    ${(subscriptionToken || paymentId) ? `
-                    <div class="transaction-details">
-                        <h3 style="margin-bottom: 12px; font-size: 16px; color: #374151;">Detalles de la transacción</h3>
-                        ${paymentId ? `
-                        <div class="detail-row">
-                            <span class="detail-label">ID de Pago:</span>
-                            <span class="detail-value">${paymentId}</span>
+                    <div class="transaction-summary">
+                        <h3 style="margin-bottom: 16px; font-size: 18px; color: #111827; font-weight: 600;">Resumen de la Transacción</h3>
+                        
+                        <div class="summary-card">
+                            <div class="summary-row">
+                                <span class="summary-label">Tipo de servicio</span>
+                                <span class="summary-value">Suscripción Premium</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-label">Método de pago</span>
+                                <span class="summary-value">DLocal Gateway</span>
+                            </div>
+                            ${paymentId ? `
+                            <div class="summary-row">
+                                <span class="summary-label">Referencia de pago</span>
+                                <span class="summary-value">${paymentId}</span>
+                            </div>
+                            ` : ''}
+                            ${subscriptionToken ? `
+                            <div class="summary-row">
+                                <span class="summary-label">Token de suscripción</span>
+                                <span class="summary-value">${subscriptionToken.substring(0, 16)}...</span>
+                            </div>
+                            ` : ''}
                         </div>
-                        ` : ''}
-                        ${subscriptionToken ? `
-                        <div class="detail-row">
-                            <span class="detail-label">Token de Suscripción:</span>
-                            <span class="detail-value">${subscriptionToken}</span>
-                        </div>
-                        ` : ''}
                     </div>
-                    ` : ''}
                     
-                    <div class="support-section">
-                        <p class="support-text">
-                            ¿Necesita asistencia? Nuestro equipo de soporte está disponible para ayudarle.
-                        </p>
-                        <a href="${whatsappLink}" class="contact-btn" target="_blank">
-                            <span class="contact-icon">💬</span>
-                            Contactar Soporte
+                    <div class="completion-notice">
+                        <div class="notice-content">
+                            <h4 style="color: #059669; margin-bottom: 8px; font-size: 16px;">Su transacción ha sido procesada exitosamente</h4>
+                            <p style="color: #374151; margin-bottom: 16px; font-size: 14px;">
+                                Para completar la activación de su servicio y recibir las credenciales de acceso, 
+                                por favor continúe con el siguiente paso.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="action-section">
+                        <a href="${whatsappLink}" class="continue-btn" target="_blank">
+                            <span class="continue-icon">→</span>
+                            Continuar con la Activación
                         </a>
+                        <p class="action-note">
+                            Será redirigido a WhatsApp para completar la configuración de su cuenta
+                        </p>
                     </div>
                 </div>
                 

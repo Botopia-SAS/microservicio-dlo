@@ -211,108 +211,209 @@ export class WebhookController {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Pago Exitoso</title>
+            <title>Transacción Completada - Botopia</title>
             <style>
-                body {
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                * {
                     margin: 0;
                     padding: 0;
+                    box-sizing: border-box;
+                }
+                body {
+                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    background: #f8fafc;
+                    color: #1e293b;
+                    line-height: 1.6;
                     min-height: 100vh;
                     display: flex;
-                    justify-content: center;
                     align-items: center;
+                    justify-content: center;
+                    padding: 20px;
                 }
                 .container {
-                    background: white;
-                    padding: 40px;
-                    border-radius: 20px;
-                    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-                    text-align: center;
+                    background: #ffffff;
+                    border-radius: 12px;
+                    border: 1px solid #e2e8f0;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
                     max-width: 500px;
-                    width: 90%;
+                    width: 100%;
+                    overflow: hidden;
+                }
+                .header {
+                    background: #059669;
+                    color: white;
+                    padding: 24px;
+                    text-align: center;
                 }
                 .success-icon {
-                    font-size: 64px;
-                    color: #4CAF50;
-                    margin-bottom: 20px;
-                }
-                h1 {
-                    color: #333;
-                    margin-bottom: 10px;
-                    font-size: 28px;
-                }
-                .subtitle {
-                    color: #666;
-                    margin-bottom: 30px;
-                    font-size: 16px;
-                }
-                .whatsapp-btn {
-                    background: #25D366;
-                    color: white;
-                    padding: 15px 30px;
-                    border: none;
-                    border-radius: 25px;
-                    font-size: 18px;
-                    font-weight: bold;
-                    text-decoration: none;
+                    width: 48px;
+                    height: 48px;
+                    background: rgba(255, 255, 255, 0.2);
+                    border-radius: 50%;
                     display: inline-flex;
                     align-items: center;
-                    gap: 10px;
-                    transition: all 0.3s ease;
-                    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
-                }
-                .whatsapp-btn:hover {
-                    background: #20BA5A;
-                    transform: translateY(-2px);
-                    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
-                }
-                .whatsapp-icon {
+                    justify-content: center;
+                    margin-bottom: 16px;
                     font-size: 24px;
                 }
-                .payment-info {
-                    background: #f8f9fa;
-                    padding: 20px;
-                    border-radius: 10px;
-                    margin: 20px 0;
-                    border-left: 4px solid #4CAF50;
+                .header h1 {
+                    font-size: 24px;
+                    font-weight: 600;
+                    margin-bottom: 8px;
                 }
-                .payment-info p {
-                    margin: 5px 0;
-                    color: #555;
+                .header p {
+                    font-size: 16px;
+                    opacity: 0.9;
+                }
+                .content {
+                    padding: 32px 24px;
+                }
+                .status-card {
+                    background: #f0fdf4;
+                    border: 1px solid #bbf7d0;
+                    border-radius: 8px;
+                    padding: 16px;
+                    margin-bottom: 24px;
+                }
+                .status-row {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 12px;
+                }
+                .status-row:last-child {
+                    margin-bottom: 0;
+                }
+                .status-label {
+                    font-weight: 500;
+                    color: #374151;
+                }
+                .status-value {
+                    color: #059669;
+                    font-weight: 600;
+                }
+                .transaction-details {
+                    background: #f8fafc;
+                    border-radius: 8px;
+                    padding: 16px;
+                    margin-bottom: 24px;
+                }
+                .detail-row {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 8px;
+                    font-size: 14px;
+                }
+                .detail-row:last-child {
+                    margin-bottom: 0;
+                }
+                .detail-label {
+                    color: #6b7280;
+                }
+                .detail-value {
+                    color: #1f2937;
+                    font-weight: 500;
+                    word-break: break-all;
+                }
+                .support-section {
+                    text-align: center;
+                    padding-top: 24px;
+                    border-top: 1px solid #e5e7eb;
+                }
+                .support-text {
+                    color: #6b7280;
+                    margin-bottom: 16px;
+                    font-size: 14px;
+                }
+                .contact-btn {
+                    background: #25d366;
+                    color: white;
+                    text-decoration: none;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    font-weight: 500;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                    transition: background-color 0.2s ease;
+                    font-size: 14px;
+                }
+                .contact-btn:hover {
+                    background: #22c55e;
+                }
+                .contact-icon {
+                    font-size: 16px;
+                }
+                .footer {
+                    background: #f8fafc;
+                    padding: 16px 24px;
+                    text-align: center;
+                    color: #6b7280;
+                    font-size: 12px;
+                }
+                @media (max-width: 480px) {
+                    .container {
+                        margin: 10px;
+                    }
+                    .content {
+                        padding: 24px 16px;
+                    }
+                    .status-row, .detail-row {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 4px;
+                    }
                 }
             </style>
         </head>
         <body>
             <div class="container">
-                <div class="success-icon">✅</div>
-                <h1>¡Pago Exitoso!</h1>
-                <p class="subtitle">Tu suscripción ha sido activada correctamente</p>
-                
-                <div class="payment-info">
-                    <p><strong>Estado:</strong> Completado</p>
-                    ${subscriptionToken ? `<p><strong>Token:</strong> ${subscriptionToken}</p>` : ''}
-                    ${paymentId ? `<p><strong>ID de Pago:</strong> ${paymentId}</p>` : ''}
+                <div class="header">
+                    <div class="success-icon">✓</div>
+                    <h1>Transacción Exitosa</h1>
+                    <p>Su suscripción ha sido procesada correctamente</p>
                 </div>
                 
-                <p style="color: #666; margin: 20px 0;">
-                    Para cualquier consulta o soporte, contáctanos:
-                </p>
+                <div class="content">
+                    <div class="status-card">
+                        <div class="status-row">
+                            <span class="status-label">Estado de la transacción</span>
+                            <span class="status-value">Completado</span>
+                        </div>
+                    </div>
+                    
+                    ${(subscriptionToken || paymentId) ? `
+                    <div class="transaction-details">
+                        <h3 style="margin-bottom: 12px; font-size: 16px; color: #374151;">Detalles de la transacción</h3>
+                        ${paymentId ? `
+                        <div class="detail-row">
+                            <span class="detail-label">ID de Pago:</span>
+                            <span class="detail-value">${paymentId}</span>
+                        </div>
+                        ` : ''}
+                        ${subscriptionToken ? `
+                        <div class="detail-row">
+                            <span class="detail-label">Token de Suscripción:</span>
+                            <span class="detail-value">${subscriptionToken}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                    ` : ''}
+                    
+                    <div class="support-section">
+                        <p class="support-text">
+                            ¿Necesita asistencia? Nuestro equipo de soporte está disponible para ayudarle.
+                        </p>
+                        <a href="${whatsappLink}" class="contact-btn" target="_blank">
+                            <span class="contact-icon">💬</span>
+                            Contactar Soporte
+                        </a>
+                    </div>
+                </div>
                 
-                <a href="${whatsappLink}" class="whatsapp-btn" target="_blank">
-                    <span class="whatsapp-icon">📱</span>
-                    Volver a Chat
-                </a>
+                <div class="footer">
+                    <p>© 2024 Botopia. Todos los derechos reservados.</p>
+                </div>
             </div>
-            
-            <script>
-                // Auto redirect after 30 seconds if user doesn't click
-                setTimeout(() => {
-                    if (confirm('¿Quieres ir automáticamente al chat de WhatsApp?')) {
-                        window.open('${whatsappLink}', '_blank');
-                    }
-                }, 30000);
-            </script>
         </body>
         </html>
       `;
@@ -337,6 +438,8 @@ export class WebhookController {
       console.log('❌ Error callback received from DLocal:', req.query);
       
       const paymentId = req.query.payment_id as string;
+      const errorCode = req.query.error_code as string;
+      const errorMessage = req.query.error_message as string;
       
       if (paymentId) {
         // Actualizar el status a Failed
@@ -344,11 +447,299 @@ export class WebhookController {
         console.log('Payment updated to Failed:', updateResult);
       }
 
-      res.status(200).json({
-        success: false,
-        message: 'Payment failed',
-        payment_id: paymentId
-      });
+      // Generar el enlace de WhatsApp para soporte
+      const phoneNumber = '573138381310';
+      const message = encodeURIComponent('Necesito ayuda con un problema en mi pago');
+      const whatsappLink = `https://wa.me/${phoneNumber}?text=${message}`;
+
+      // Responder con una página HTML profesional de error
+      const errorHtml = `
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Error en la Transacción - Botopia</title>
+            <style>
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+                body {
+                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    background: #f8fafc;
+                    color: #1e293b;
+                    line-height: 1.6;
+                    min-height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 20px;
+                }
+                .container {
+                    background: #ffffff;
+                    border-radius: 12px;
+                    border: 1px solid #e2e8f0;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                    max-width: 500px;
+                    width: 100%;
+                    overflow: hidden;
+                }
+                .header {
+                    background: #dc2626;
+                    color: white;
+                    padding: 24px;
+                    text-align: center;
+                }
+                .error-icon {
+                    width: 48px;
+                    height: 48px;
+                    background: rgba(255, 255, 255, 0.2);
+                    border-radius: 50%;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: 16px;
+                    font-size: 24px;
+                }
+                .header h1 {
+                    font-size: 24px;
+                    font-weight: 600;
+                    margin-bottom: 8px;
+                }
+                .header p {
+                    font-size: 16px;
+                    opacity: 0.9;
+                }
+                .content {
+                    padding: 32px 24px;
+                }
+                .status-card {
+                    background: #fef2f2;
+                    border: 1px solid #fecaca;
+                    border-radius: 8px;
+                    padding: 16px;
+                    margin-bottom: 24px;
+                }
+                .status-row {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 12px;
+                }
+                .status-row:last-child {
+                    margin-bottom: 0;
+                }
+                .status-label {
+                    font-weight: 500;
+                    color: #374151;
+                }
+                .status-value {
+                    color: #dc2626;
+                    font-weight: 600;
+                }
+                .error-details {
+                    background: #f8fafc;
+                    border-radius: 8px;
+                    padding: 16px;
+                    margin-bottom: 24px;
+                }
+                .detail-row {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 8px;
+                    font-size: 14px;
+                }
+                .detail-row:last-child {
+                    margin-bottom: 0;
+                }
+                .detail-label {
+                    color: #6b7280;
+                }
+                .detail-value {
+                    color: #1f2937;
+                    font-weight: 500;
+                    word-break: break-all;
+                }
+                .help-section {
+                    background: #f0f9ff;
+                    border: 1px solid #bae6fd;
+                    border-radius: 8px;
+                    padding: 16px;
+                    margin-bottom: 24px;
+                }
+                .help-title {
+                    font-weight: 600;
+                    color: #0369a1;
+                    margin-bottom: 8px;
+                    font-size: 16px;
+                }
+                .help-text {
+                    color: #0f172a;
+                    font-size: 14px;
+                    margin-bottom: 12px;
+                }
+                .help-list {
+                    color: #374151;
+                    font-size: 14px;
+                    padding-left: 16px;
+                }
+                .support-section {
+                    text-align: center;
+                    padding-top: 24px;
+                    border-top: 1px solid #e5e7eb;
+                }
+                .support-text {
+                    color: #6b7280;
+                    margin-bottom: 16px;
+                    font-size: 14px;
+                }
+                .contact-btn {
+                    background: #25d366;
+                    color: white;
+                    text-decoration: none;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    font-weight: 500;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                    transition: background-color 0.2s ease;
+                    font-size: 14px;
+                }
+                .contact-btn:hover {
+                    background: #22c55e;
+                }
+                .contact-icon {
+                    font-size: 16px;
+                }
+                .retry-btn {
+                    background: #3b82f6;
+                    color: white;
+                    text-decoration: none;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    font-weight: 500;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                    transition: background-color 0.2s ease;
+                    font-size: 14px;
+                    margin-right: 12px;
+                }
+                .retry-btn:hover {
+                    background: #2563eb;
+                }
+                .footer {
+                    background: #f8fafc;
+                    padding: 16px 24px;
+                    text-align: center;
+                    color: #6b7280;
+                    font-size: 12px;
+                }
+                @media (max-width: 480px) {
+                    .container {
+                        margin: 10px;
+                    }
+                    .content {
+                        padding: 24px 16px;
+                    }
+                    .status-row, .detail-row {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 4px;
+                    }
+                    .retry-btn {
+                        margin-right: 0;
+                        margin-bottom: 12px;
+                        width: 100%;
+                        justify-content: center;
+                    }
+                    .contact-btn {
+                        width: 100%;
+                        justify-content: center;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <div class="error-icon">✕</div>
+                    <h1>Error en la Transacción</h1>
+                    <p>No se pudo procesar su pago</p>
+                </div>
+                
+                <div class="content">
+                    <div class="status-card">
+                        <div class="status-row">
+                            <span class="status-label">Estado de la transacción</span>
+                            <span class="status-value">Fallida</span>
+                        </div>
+                    </div>
+                    
+                    ${(paymentId || errorCode || errorMessage) ? `
+                    <div class="error-details">
+                        <h3 style="margin-bottom: 12px; font-size: 16px; color: #374151;">Detalles del error</h3>
+                        ${paymentId ? `
+                        <div class="detail-row">
+                            <span class="detail-label">ID de Pago:</span>
+                            <span class="detail-value">${paymentId}</span>
+                        </div>
+                        ` : ''}
+                        ${errorCode ? `
+                        <div class="detail-row">
+                            <span class="detail-label">Código de Error:</span>
+                            <span class="detail-value">${errorCode}</span>
+                        </div>
+                        ` : ''}
+                        ${errorMessage ? `
+                        <div class="detail-row">
+                            <span class="detail-label">Descripción:</span>
+                            <span class="detail-value">${errorMessage}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                    ` : ''}
+                    
+                    <div class="help-section">
+                        <div class="help-title">¿Qué puedo hacer?</div>
+                        <div class="help-text">Los errores en los pagos pueden ocurrir por varios motivos:</div>
+                        <ul class="help-list">
+                            <li>Fondos insuficientes en su cuenta</li>
+                            <li>Datos de tarjeta incorrectos</li>
+                            <li>Problemas temporales con el banco</li>
+                            <li>Límites de transacción excedidos</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="support-section">
+                        <p class="support-text">
+                            Puede intentar nuevamente o contactar a nuestro equipo de soporte para asistencia inmediata.
+                        </p>
+                        <div>
+                            <a href="javascript:history.back()" class="retry-btn">
+                                <span>↶</span>
+                                Intentar Nuevamente
+                            </a>
+                            <a href="${whatsappLink}" class="contact-btn" target="_blank">
+                                <span class="contact-icon">💬</span>
+                                Contactar Soporte
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="footer">
+                    <p>© 2024 Botopia. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+      `;
+
+      res.status(200).send(errorHtml);
 
     } catch (error: any) {
       console.error('❌ Error processing error callback:', error);

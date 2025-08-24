@@ -204,339 +204,338 @@ export class WebhookController {
       const message = encodeURIComponent('Ya realicé el pago');
       const whatsappLink = `https://wa.me/${phoneNumber}?text=${message}`;
 
-      // Responder con una página HTML que incluya el botón de WhatsApp
+      // Obtener fecha actual en timezone de Colombia (UTC-5)
+      const now = new Date();
+      const colombiaTime = new Date(now.getTime() - (5 * 60 * 60 * 1000));
+      const formattedDate = colombiaTime.toLocaleDateString('es-CO', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      });
+      const formattedTime = colombiaTime.toLocaleTimeString('es-CO', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+
+      // Responder con una página HTML estilo Rappi
       const successHtml = `
         <!DOCTYPE html>
         <html lang="es">
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Transacción Completada - Botopia</title>
+            <title>¡Pago Exitoso! - Botopia</title>
             <style>
                 * {
                     margin: 0;
                     padding: 0;
                     box-sizing: border-box;
                 }
+                
                 body {
-                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                    background: #f8fafc;
-                    color: #1e293b;
-                    line-height: 1.6;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                     min-height: 100vh;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    padding: 20px;
-                }
-                .container {
-                    background: #ffffff;
-                    border-radius: 12px;
-                    border: 1px solid #e2e8f0;
-                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-                    max-width: 500px;
-                    width: 100%;
+                    padding: 16px;
                     overflow: hidden;
                 }
-                .header {
-                    background: #059669;
-                    color: white;
-                    padding: 24px;
+                
+                .container {
+                    background: white;
+                    border-radius: 20px;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+                    max-width: 400px;
+                    width: 100%;
                     text-align: center;
+                    overflow: hidden;
+                    animation: slideUp 0.6s ease-out;
+                    max-height: 90vh;
                 }
+                
+                @keyframes slideUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(30px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                
+                .success-header {
+                    padding: 30px 20px 20px;
+                    animation: fadeIn 0.8s ease-out 0.2s both;
+                }
+                
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                
                 .success-icon {
-                    width: 48px;
-                    height: 48px;
-                    background: rgba(255, 255, 255, 0.2);
+                    width: 80px;
+                    height: 80px;
+                    background: linear-gradient(135deg, #00C851 0%, #007E33 100%);
                     border-radius: 50%;
-                    display: inline-flex;
+                    display: flex;
                     align-items: center;
                     justify-content: center;
-                    margin-bottom: 16px;
-                    font-size: 24px;
+                    margin: 0 auto 20px;
+                    animation: bounceIn 0.8s ease-out 0.4s both;
+                    box-shadow: 0 10px 25px rgba(0, 200, 81, 0.3);
                 }
-                .header h1 {
-                    font-size: 24px;
-                    font-weight: 600;
+                
+                @keyframes bounceIn {
+                    0% {
+                        opacity: 0;
+                        transform: scale(0.3);
+                    }
+                    50% {
+                        opacity: 1;
+                        transform: scale(1.05);
+                    }
+                    70% {
+                        transform: scale(0.9);
+                    }
+                    100% {
+                        opacity: 1;
+                        transform: scale(1);
+                    }
+                }
+                
+                .success-icon svg {
+                    width: 40px;
+                    height: 40px;
+                    fill: white;
+                }
+                
+                .success-title {
+                    font-size: 28px;
+                    font-weight: 700;
+                    color: #2c3e50;
                     margin-bottom: 8px;
+                    animation: fadeIn 0.8s ease-out 0.6s both;
                 }
-                .header p {
+                
+                .success-subtitle {
                     font-size: 16px;
-                    opacity: 0.9;
+                    color: #7f8c8d;
+                    margin-bottom: 20px;
+                    animation: fadeIn 0.8s ease-out 0.8s both;
                 }
-                .content {
-                    padding: 32px 24px;
-                }
-                .status-card {
-                    background: #f0fdf4;
-                    border: 1px solid #bbf7d0;
-                    border-radius: 8px;
-                    padding: 16px;
-                    margin-bottom: 24px;
-                }
-                .status-row {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 12px;
-                }
-                .status-row:last-child {
-                    margin-bottom: 0;
-                }
-                .status-label {
-                    font-weight: 500;
-                    color: #374151;
-                }
-                .status-value {
-                    color: #059669;
-                    font-weight: 600;
-                }
+                
                 .transaction-summary {
-                    margin-bottom: 24px;
-                }
-                .summary-card {
-                    background: #f8fafc;
-                    border: 1px solid #e2e8f0;
-                    border-radius: 8px;
+                    background: #f8f9fa;
+                    margin: 0 20px 20px;
+                    border-radius: 16px;
                     padding: 20px;
+                    animation: slideInRight 0.8s ease-out 1s both;
                 }
+                
+                @keyframes slideInRight {
+                    from {
+                        opacity: 0;
+                        transform: translateX(20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
+                
                 .summary-row {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
                     margin-bottom: 12px;
-                    padding-bottom: 12px;
-                    border-bottom: 1px solid #e5e7eb;
+                    font-size: 14px;
                 }
+                
                 .summary-row:last-child {
                     margin-bottom: 0;
-                    padding-bottom: 0;
-                    border-bottom: none;
-                }
-                .summary-label {
-                    font-weight: 500;
-                    color: #6b7280;
-                    font-size: 14px;
-                }
-                .summary-value {
-                    color: #111827;
+                    padding-top: 12px;
+                    border-top: 1px solid #e9ecef;
                     font-weight: 600;
-                    font-size: 14px;
-                    text-align: right;
-                    max-width: 60%;
-                    word-break: break-word;
-                }
-                .completion-notice {
-                    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
-                    border: 1px solid #bbf7d0;
-                    border-radius: 8px;
-                    padding: 20px;
-                    margin-bottom: 24px;
-                    text-align: center;
-                }
-                .action-section {
-                    text-align: center;
-                    padding-top: 8px;
-                }
-                .continue-btn {
-                    background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
-                    color: white;
-                    text-decoration: none;
-                    padding: 16px 32px;
-                    border-radius: 8px;
-                    font-weight: 600;
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 12px;
-                    transition: all 0.3s ease;
                     font-size: 16px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                    border: 2px solid transparent;
-                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
                 }
-                .continue-btn:hover {
-                    background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
-                    transform: translateY(-1px);
-                    box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.15);
+                
+                .summary-label {
+                    color: #6c757d;
                 }
-                .continue-icon {
-                    font-size: 18px;
-                    font-weight: bold;
-                }
-                .action-note {
-                    color: #6b7280;
-                    font-size: 12px;
-                    margin-top: 12px;
-                    font-style: italic;
-                }
-                .transaction-details {
-                    background: #f8fafc;
-                    border-radius: 8px;
-                    padding: 16px;
-                    margin-bottom: 24px;
-                }
-                .detail-row {
-                    display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 8px;
-                    font-size: 14px;
-                }
-                .detail-row:last-child {
-                    margin-bottom: 0;
-                }
-                .detail-label {
-                    color: #6b7280;
-                }
-                .detail-value {
-                    color: #1f2937;
+                
+                .summary-value {
+                    color: #495057;
                     font-weight: 500;
-                    word-break: break-all;
                 }
-                .support-section {
-                    text-align: center;
-                    padding-top: 24px;
-                    border-top: 1px solid #e5e7eb;
-                }
-                .support-text {
-                    color: #6b7280;
-                    margin-bottom: 16px;
-                    font-size: 14px;
-                }
-                .contact-btn {
-                    background: #25d366;
+                
+                .status-badge {
+                    background: linear-gradient(135deg, #00C851 0%, #007E33 100%);
                     color: white;
-                    text-decoration: none;
-                    padding: 12px 24px;
-                    border-radius: 8px;
+                    padding: 4px 12px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                }
+                
+                .next-step {
+                    background: #e8f5e8;
+                    margin: 0 20px;
+                    border-radius: 12px;
+                    padding: 16px;
+                    border-left: 4px solid #00C851;
+                    animation: slideInLeft 0.8s ease-out 1.2s both;
+                }
+                
+                @keyframes slideInLeft {
+                    from {
+                        opacity: 0;
+                        transform: translateX(-20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
+                
+                .next-step-text {
+                    color: #2d5a2d;
+                    font-size: 14px;
                     font-weight: 500;
+                    margin-bottom: 16px;
+                }
+                
+                .action-button {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border: none;
+                    padding: 16px 32px;
+                    border-radius: 50px;
+                    font-size: 16px;
+                    font-weight: 600;
+                    text-decoration: none;
                     display: inline-flex;
                     align-items: center;
                     gap: 8px;
-                    transition: background-color 0.2s ease;
-                    font-size: 14px;
+                    margin: 20px;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+                    animation: pulse 2s infinite;
+                    cursor: pointer;
                 }
-                .contact-btn:hover {
-                    background: #22c55e;
+                
+                @keyframes pulse {
+                    0% {
+                        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+                    }
+                    50% {
+                        box-shadow: 0 12px 30px rgba(102, 126, 234, 0.5);
+                        transform: translateY(-2px);
+                    }
+                    100% {
+                        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+                    }
                 }
-                .contact-icon {
-                    font-size: 16px;
+                
+                .action-button:hover {
+                    transform: translateY(-3px);
+                    box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
                 }
-                .footer {
-                    background: #f8fafc;
-                    padding: 16px 24px;
-                    text-align: center;
-                    color: #6b7280;
+                
+                .footer-note {
+                    padding: 16px 20px;
+                    color: #9ca3af;
                     font-size: 12px;
+                    background: #f8f9fa;
                 }
+                
                 @media (max-width: 480px) {
                     .container {
-                        margin: 10px;
+                        margin: 8px;
+                        border-radius: 16px;
+                        max-height: 95vh;
                     }
-                    .content {
-                        padding: 24px 16px;
+                    
+                    .success-title {
+                        font-size: 24px;
                     }
-                    .status-row, .detail-row, .summary-row {
-                        flex-direction: column;
-                        align-items: flex-start;
-                        gap: 4px;
+                    
+                    .success-icon {
+                        width: 70px;
+                        height: 70px;
                     }
-                    .summary-value {
-                        max-width: 100%;
-                        text-align: left;
-                        font-size: 13px;
+                    
+                    .success-icon svg {
+                        width: 35px;
+                        height: 35px;
                     }
-                    .continue-btn {
-                        width: 100%;
-                        justify-content: center;
-                        padding: 14px 24px;
-                        font-size: 14px;
+                    
+                    .transaction-summary,
+                    .next-step {
+                        margin: 0 16px 16px;
+                        padding: 16px;
                     }
-                    .header h1 {
-                        font-size: 20px;
-                    }
-                    .header p {
-                        font-size: 14px;
+                    
+                    .action-button {
+                        margin: 16px;
+                        padding: 14px 28px;
+                        font-size: 15px;
                     }
                 }
             </style>
         </head>
         <body>
             <div class="container">
-                <div class="header">
-                    <div class="success-icon">✓</div>
-                    <h1>Transacción Exitosa</h1>
-                    <p>Su suscripción ha sido procesada correctamente</p>
+                <div class="success-header">
+                    <div class="success-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                        </svg>
+                    </div>
+                    <h1 class="success-title">¡Pago Exitoso!</h1>
+                    <p class="success-subtitle">Tu suscripción está activa</p>
                 </div>
                 
-                <div class="content">
-                    <div class="status-card">
-                        <div class="status-row">
-                            <span class="status-label">Estado de la transacción</span>
-                            <span class="status-value">Completado</span>
-                        </div>
-                        <div class="status-row">
-                            <span class="status-label">Fecha de procesamiento</span>
-                            <span class="status-value">${new Date().toLocaleDateString('es-ES', { 
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            })}</span>
-                        </div>
+                <div class="transaction-summary">
+                    <div class="summary-row">
+                        <span class="summary-label">Estado</span>
+                        <span class="status-badge">Completado</span>
                     </div>
-                    
-                    <div class="transaction-summary">
-                        <h3 style="margin-bottom: 16px; font-size: 18px; color: #111827; font-weight: 600;">Resumen de la Transacción</h3>
-                        
-                        <div class="summary-card">
-                            <div class="summary-row">
-                                <span class="summary-label">Tipo de servicio</span>
-                                <span class="summary-value">Suscripción Premium</span>
-                            </div>
-                            <div class="summary-row">
-                                <span class="summary-label">Método de pago</span>
-                                <span class="summary-value">DLocal Gateway</span>
-                            </div>
-                            ${paymentId ? `
-                            <div class="summary-row">
-                                <span class="summary-label">Referencia de pago</span>
-                                <span class="summary-value">${paymentId}</span>
-                            </div>
-                            ` : ''}
-                            ${subscriptionToken ? `
-                            <div class="summary-row">
-                                <span class="summary-label">Token de suscripción</span>
-                                <span class="summary-value">${subscriptionToken.substring(0, 16)}...</span>
-                            </div>
-                            ` : ''}
-                        </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Fecha</span>
+                        <span class="summary-value">${formattedDate}</span>
                     </div>
-                    
-                    <div class="completion-notice">
-                        <div class="notice-content">
-                            <h4 style="color: #059669; margin-bottom: 8px; font-size: 16px;">Su transacción ha sido procesada exitosamente</h4>
-                            <p style="color: #374151; margin-bottom: 16px; font-size: 14px;">
-                                Para completar la activación de su servicio y recibir las credenciales de acceso, 
-                                por favor continúe con el siguiente paso.
-                            </p>
-                        </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Hora</span>
+                        <span class="summary-value">${formattedTime}</span>
                     </div>
-                    
-                    <div class="action-section">
-                        <a href="${whatsappLink}" class="continue-btn" target="_blank">
-                            <span class="continue-icon">→</span>
-                            Continuar con la Activación
-                        </a>
-                        <p class="action-note">
-                            Será redirigido a WhatsApp para completar la configuración de su cuenta
-                        </p>
+                    ${paymentId ? `
+                    <div class="summary-row">
+                        <span class="summary-label">Transacción</span>
+                        <span class="summary-value">#${paymentId.slice(-6).toUpperCase()}</span>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <div class="next-step">
+                    <div class="next-step-text">
+                        ✅ Tu transacción ha sido procesada exitosamente.<br>
+                        Continúa en el chat para activar tu servicio.
                     </div>
                 </div>
                 
-                <div class="footer">
-                    <p>© 2024 Botopia. Todos los derechos reservados.</p>
+                <a href="${whatsappLink}" class="action-button" target="_blank">
+                    <span>→</span>
+                    <span>CONTINUAR EN EL BOT</span>
+                </a>
+                
+                <div class="footer-note">
+                    Serás redirigido a WhatsApp para completar la configuración
                 </div>
             </div>
         </body>

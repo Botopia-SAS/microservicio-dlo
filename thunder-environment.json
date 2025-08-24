@@ -1,0 +1,16 @@
+{
+  "client": "Thunder Client",
+  "environmentName": "DLocal Development",
+  "dateExported": "2025-08-23T15:00:00.000Z",
+  "version": "1.0",
+  "variables": [
+    {
+      "name": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "name": "paymentId",
+      "value": "PAY_EXAMPLE_ID"
+    }
+  ]
+}

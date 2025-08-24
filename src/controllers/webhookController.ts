@@ -201,7 +201,7 @@ export class WebhookController {
 
       // Generar el enlace de WhatsApp
       const phoneNumber = '573138381310'; // Número con código de país Colombia
-      const message = encodeURIComponent('Ya realicé el pago');
+      const message = encodeURIComponent('Ya realicé el pago de mi suscripción ✅');
       const whatsappLink = `https://wa.me/${phoneNumber}?text=${message}`;
 
       // Obtener fecha actual en timezone de Colombia (UTC-5)
@@ -535,9 +535,27 @@ export class WebhookController {
                 </a>
                 
                 <div class="footer-note">
-                    Serás redirigido a WhatsApp para completar la configuración
+                    Redirigiendo a WhatsApp automáticamente...
                 </div>
             </div>
+            
+            <script>
+                // Redirección automática después de 2 segundos
+                setTimeout(function() {
+                    window.location.href = '${whatsappLink}';
+                }, 2000);
+                
+                // También permitir clic manual en el botón
+                document.addEventListener('DOMContentLoaded', function() {
+                    const button = document.querySelector('.action-button');
+                    if (button) {
+                        button.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            window.location.href = '${whatsappLink}';
+                        });
+                    }
+                });
+            </script>
         </body>
         </html>
       `;

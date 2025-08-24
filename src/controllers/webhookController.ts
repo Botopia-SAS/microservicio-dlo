@@ -208,7 +208,7 @@ export class WebhookController {
 
     // Generar el enlace de WhatsApp
     const phoneNumber = config.whatsapp.phoneNumber; // Desde config/env
-      const message = encodeURIComponent('Pagado ✅');
+      const message = encodeURIComponent('Pagado');
       const whatsappLink = `https://wa.me/${phoneNumber}?text=${message}`;
 
       // Obtener fecha actual en timezone de Colombia (UTC-5)

@@ -111,11 +111,6 @@ Webhooks y callbacks (`/api/webhooks`)
 - CORS usa `CORS_ORIGIN`
 - Rate limiting configurable por `RATE_LIMIT_WINDOW_MS` y `RATE_LIMIT_MAX_REQUESTS`
 - Usa HTTPS en producción y no expongas tus llaves
-
-## 🧰 Colección Thunder Client
-
-Incluye `thunder-collection.json` y `thunder-environment.json` para probar endpoints desde VS Code.
-
 ## � Troubleshooting
 
 - Bloqueo de devtunnels: si tu red bloquea dominios tipo `*.devtunnels.ms`, usa ngrok/Cloudflare Tunnel u otro dominio y ponlo en `CORS_ORIGIN` (y opcionalmente `PUBLIC_BASE_URL`).

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import dLocalSubscriptionService from '../services/dLocalSubscriptionService';
 import supabaseService from '../services/supabaseService';
 import { DLocalSubscriptionPlanRequest } from '../types';
+import config from '../config';
 import { isValidAmount } from '../utils/helpers';
 
 export class SubscriptionController {
@@ -56,6 +57,10 @@ export class SubscriptionController {
       }
 
       // Configurar el plan de suscripción para DLocal
+      // Build URLs from env/config
+      const publicBase = config.urls.publicBaseUrl.replace(/\/$/, '');
+      const frontendBase = config.urls.frontendBaseUrl.replace(/\/$/, '');
+
       const planData: DLocalSubscriptionPlanRequest = {
         name: `${plan.plan_name} - ${user.name}`,
         description: plan.description || `Subscription for ${user.name}`,
@@ -65,10 +70,10 @@ export class SubscriptionController {
         frequency_value: plan.frequency_value,
         active: true,
         free_trial_days: 0,
-        notification_url: 'https://pzzh33k5-3000.use2.devtunnels.ms/api/webhooks/dlocal',
-        success_url: 'https://pzzh33k5-3000.use2.devtunnels.ms/api/webhooks/success',
-        back_url: 'http://localhost:3000/subscription-cancel',
-        error_url: 'https://pzzh33k5-3000.use2.devtunnels.ms/api/webhooks/error',
+        notification_url: `${publicBase}/api/webhooks/dlocal`,
+        success_url: `${publicBase}/api/webhooks/success`,
+        back_url: `${frontendBase}/subscription-cancel`,
+        error_url: `${publicBase}/api/webhooks/error`,
       };
 
       // Crear el plan en DLocal
@@ -171,7 +176,10 @@ export class SubscriptionController {
       }
 
       // Configurar el plan SIN especificar país para que DLocal Go muestre selector
-      const planData: DLocalSubscriptionPlanRequest = {
+  const publicBase2 = config.urls.publicBaseUrl.replace(/\/$/, '');
+  const frontendBase2 = config.urls.frontendBaseUrl.replace(/\/$/, '');
+
+  const planData: DLocalSubscriptionPlanRequest = {
         name: name.trim(),
         description,
         // NO incluimos 'country' para que DLocal Go muestre el selector de país
@@ -181,10 +189,10 @@ export class SubscriptionController {
         frequency_value: frequency_value || 1,
         active: true,
         free_trial_days: 0,
-        notification_url: `${req.protocol}://${req.get('host')}/api/subscriptions/webhook`,
-        success_url: 'http://localhost:3000/subscription-success',
-        back_url: 'http://localhost:3000/subscription-cancel',
-        error_url: 'http://localhost:3000/subscription-error',
+  notification_url: `${publicBase2}/api/webhooks/dlocal`,
+  success_url: `${publicBase2}/api/webhooks/success`,
+  back_url: `${frontendBase2}/subscription-cancel`,
+  error_url: `${publicBase2}/api/webhooks/error`,
       };
 
       // Crear el plan en DLocal

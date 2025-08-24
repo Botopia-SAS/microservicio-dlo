@@ -8,7 +8,7 @@ import supabaseService from './services/supabaseService';
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({ origin: config.security.corsOrigin }));
 app.use(express.json());
 
 // Routes

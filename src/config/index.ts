@@ -14,6 +14,15 @@ export interface Config {
     anonKey: string;
     serviceRoleKey: string;
   };
+  urls: {
+    // Public URL where this API is reachable from the internet (for webhooks/callbacks)
+    publicBaseUrl: string;
+    // Frontend application base URL (for back/cancel/error redirects)
+    frontendBaseUrl: string;
+  };
+  whatsapp: {
+    phoneNumber: string;
+  };
   security: {
     corsOrigin: string;
   };
@@ -34,6 +43,13 @@ const config: Config = {
     url: process.env.SUPABASE_URL || '',
     anonKey: process.env.SUPABASE_KEY || '', // Usando SUPABASE_KEY que ya tienes
     serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+  },
+  urls: {
+    publicBaseUrl: process.env.PUBLIC_BASE_URL || process.env.CORS_ORIGIN || `http://localhost:${process.env.PORT || '3000'}`,
+    frontendBaseUrl: process.env.FRONTEND_BASE_URL || (process.env.CORS_ORIGIN || 'http://localhost:3000'),
+  },
+  whatsapp: {
+    phoneNumber: process.env.WHATSAPP_NUMBER || '573138381310',
   },
   security: {
     corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',

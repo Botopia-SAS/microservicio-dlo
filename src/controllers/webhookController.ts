@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import supabaseService from '../services/supabaseService';
+import config from '../config';
 
 export class WebhookController {
   /**
@@ -205,8 +206,8 @@ export class WebhookController {
         }
       }
 
-      // Generar el enlace de WhatsApp
-      const phoneNumber = '573138381310'; // Número con código de país Colombia
+    // Generar el enlace de WhatsApp
+    const phoneNumber = config.whatsapp.phoneNumber; // Desde config/env
       const message = encodeURIComponent('Ya realicé el pago de mi suscripción ✅');
       const whatsappLink = `https://wa.me/${phoneNumber}?text=${message}`;
 

@@ -18,4 +18,7 @@ router.get('/plans/:id', subscriptionController.getPlan);
 // Webhook endpoint
 router.post('/webhook', subscriptionController.handleWebhook);
 
+// Cancel subscription by user_id
+router.patch('/cancel/by-user', subscriptionController.cancelByUser);
+
 export default router;

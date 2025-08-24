@@ -77,6 +77,185 @@ export class SupabaseService {
   }
 
   /**
+   * Verifica si el usuario ya tiene una suscripción activa en la tabla payments
+   * Consideramos "activa" cualquier registro con status 'Completed' o 'Active'.
+   */
+  async hasActiveSubscription(userId: string): Promise<{ success: boolean; active: boolean; data?: any; error?: string }> {
+    try {
+      const { data, error } = await this.supabase
+        .from('payments')
+        .select('*')
+        .eq('id', userId)
+        .in('status', ['Completed', 'Active'])
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.error('Error checking active subscription:', error);
+        return { success: false, active: false, error: error.message };
+      }
+
+      const hasActive = !!(data && data.length > 0);
+      return { success: true, active: hasActive, data: hasActive ? data[0] : undefined };
+    } catch (error: any) {
+      console.error('Error in hasActiveSubscription:', error);
+      return { success: false, active: false, error: error.message };
+    }
+  }
+
+  /**
+   * Obtiene el payment activo (Completed/Active) más reciente para un usuario
+   */
+  async getActivePaymentByUser(userId: string): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Preferir Completed; si no hay, buscar Active
+      const completedQuery = this.supabase
+        .from('payments')
+        .select('*')
+        .eq('id', userId)
+        .eq('status', 'Completed')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      let { data, error } = await completedQuery;
+      if (!error && (!data || data.length === 0)) {
+        const { data: activeData, error: activeError } = await this.supabase
+          .from('payments')
+          .select('*')
+          .eq('id', userId)
+          .eq('status', 'Active')
+          .order('created_at', { ascending: false })
+          .limit(1);
+        data = activeData as any;
+        error = activeError as any;
+      }
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+      if (!data || data.length === 0) {
+        return { success: false, error: 'No active subscription found for user' };
+      }
+      return { success: true, data: data[0] };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Obtiene el payment más reciente por estado específico para un usuario
+   */
+  async getLatestPaymentByUserAndStatus(userId: string, status: string): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      const { data, error } = await this.supabase
+        .from('payments')
+        .select('*')
+        .eq('id', userId)
+        .eq('status', status)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) return { success: false, error: error.message };
+      if (!data || data.length === 0) return { success: false, error: `No ${status} payments found for user` };
+      return { success: true, data: data[0] };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  
+
+  /**
+   * Fallback: obtiene el último plan de suscripción creado en nuestra tabla de referencia
+   * Devuelve plan_token y plan_id de DLocal si existen en subscription_plans
+   */
+  async getLatestSubscriptionPlan(): Promise<{ success: boolean; data?: { plan_token?: string; plan_id?: string | number }; error?: string }> {
+    try {
+      const { data, error } = await this.supabase
+        .from('subscription_plans')
+        .select('plan_token, plan_id')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+      if (!data || data.length === 0) {
+        return { success: false, error: 'No subscription plans found in reference table' };
+      }
+      return { success: true, data: data[0] };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Busca en pagos recientes del usuario (Completed y Active) para extraer planId/token y subscriptionId
+   */
+  async findPlanAndSubscriptionForUser(userId: string): Promise<{ success: boolean; data?: { planId?: string; subscriptionId?: string }; error?: string }> {
+    try {
+      const { data, error } = await this.supabase
+        .from('payments')
+        .select('*')
+        .eq('id', userId)
+        .in('status', ['Completed', 'Active'])
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) return { success: false, error: error.message };
+      if (!data || data.length === 0) return { success: false, error: 'No Completed/Active payments found' };
+
+      for (const row of data) {
+        const planId = String(row.dlocal_plan_id || row.dLocal_plan_id || row.dlocal_plan || row.dlocal_plan_token || row.plan_token || '');
+        const subscriptionId = String(row.dlo_payment_id || row.subscription_id || row.subscription_token || '');
+        if (planId || subscriptionId) {
+          return {
+            success: true,
+            data: {
+              planId: planId || undefined,
+              subscriptionId: subscriptionId || undefined,
+            }
+          };
+        }
+      }
+      return { success: false, error: 'No DLocal identifiers found in recent payments' };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Actualiza el status de un payment por idx (clave técnica) o por id de usuario
+   */
+  async setPaymentStatusByIdxOrUser(opts: { idx?: number; userId?: string; newStatus: string }): Promise<{ success: boolean; data?: any; error?: string }> {
+    const { idx, userId, newStatus } = opts;
+    if (!idx && !userId) {
+      return { success: false, error: 'idx or userId required' };
+    }
+    try {
+      let updateBuilder = this.supabase
+        .from('payments')
+        .update({ status: newStatus });
+
+      if (idx) {
+        updateBuilder = updateBuilder.eq('idx', idx);
+      } else if (userId) {
+        updateBuilder = updateBuilder.eq('id', userId);
+      }
+
+      const { data, error } = await updateBuilder
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1);
+      if (error) return { success: false, error: error.message };
+      if (!data || data.length === 0) return { success: false, error: 'Payment not found to update' };
+      return { success: true, data: data[0] };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
    * Crea un payment en estado pending
    */
   async createPayment(paymentData: {
@@ -85,20 +264,36 @@ export class SupabaseService {
     amount: number;
     currency: string;
     description?: string;
-    dlocal_payment_id?: string;
+  dlocal_payment_id?: string;
+  dlocal_plan_id?: string | number;
+  plan_token?: string;
   }): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
+      // Validación: impedir múltiples suscripciones activas por usuario
+      const activeCheck = await this.hasActiveSubscription(paymentData.user_id);
+      if (activeCheck.success && activeCheck.active) {
+        return {
+          success: false,
+          error: 'User already has an active subscription',
+        };
+      }
+
+      const insertPayload: any = {
+        id: paymentData.user_id,
+        plan_id: paymentData.plan_id,
+        amount: paymentData.amount,
+        currency: paymentData.currency,
+        status: 'Pending',
+        description: paymentData.description || `Subscription payment for plan ${paymentData.plan_id} for user ${paymentData.user_id}`,
+        dlo_payment_id: paymentData.dlocal_payment_id || `temp_${Date.now()}`,
+      };
+
+      if (paymentData.dlocal_plan_id) insertPayload.dlocal_plan_id = paymentData.dlocal_plan_id;
+      if (paymentData.plan_token) insertPayload.plan_token = paymentData.plan_token;
+
       const { data, error } = await this.supabase
         .from('payments')
-        .insert([{
-          id: paymentData.user_id,
-          plan_id: paymentData.plan_id,
-          amount: paymentData.amount,
-          currency: paymentData.currency,
-          status: 'Pending',
-          description: paymentData.description || `Subscription payment for plan ${paymentData.plan_id} for user ${paymentData.user_id}`,
-          dlo_payment_id: paymentData.dlocal_payment_id || `temp_${Date.now()}`,
-        }])
+        .insert([insertPayload])
         .select();
 
       if (error) {
@@ -281,7 +476,7 @@ export class SupabaseService {
   /**
    * Actualiza el plan_id del usuario cuando el pago es exitoso
    */
-  async updateUserPlan(userId: string, planId: string): Promise<{ success: boolean; data?: any; error?: string }> {
+  async updateUserPlan(userId: string, planId: string | null): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
       const { data, error } = await this.supabase
         .from('users')

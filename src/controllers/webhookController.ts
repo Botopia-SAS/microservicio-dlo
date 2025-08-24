@@ -43,11 +43,13 @@ export class WebhookController {
         case 'payment.success':
           newStatus = 'Completed';
           break;
-        case 'payment.rejected':
-        case 'payment.failed':
-        case 'payment.cancelled':
+                case 'payment.rejected':
+                case 'payment.failed':
           newStatus = 'Failed';
           break;
+                case 'payment.cancelled':
+                    newStatus = 'Cancelled';
+                    break;
         case 'payment.pending':
         case 'payment.processing':
           newStatus = 'Pending';
@@ -58,10 +60,12 @@ export class WebhookController {
         case 'subscription.activated':
           newStatus = 'Completed';
           break;
-        case 'subscription.payment_failed':
-        case 'subscription.cancelled':
+                case 'subscription.payment_failed':
           newStatus = 'Failed';
           break;
+                case 'subscription.cancelled':
+                    newStatus = 'Cancelled';
+                    break;
         case 'subscription.created':
           newStatus = 'Pending';
           break;
@@ -115,6 +119,8 @@ export class WebhookController {
         const payment = updateResult.data;
         console.log('� Payment data for user update:', JSON.stringify(payment, null, 2));
         console.log('�🔄 Updating user plan for successful payment...');
+    // Nota: Aquí es donde el usuario pasa a tener una suscripción activa.
+    // La creación de nuevas suscripciones está bloqueada en el controlador cuando existe una activa.
         
         // Verificar que tengamos user_id y plan_id válidos
         const userId = payment.id; // El id del payment ES el user_id

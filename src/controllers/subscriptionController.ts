@@ -44,6 +44,17 @@ export class SubscriptionController {
       const user = userResult.data;
       const plan = planResult.data;
 
+      // Impedir múltiples suscripciones activas por usuario
+      const activeCheck = await supabaseService.hasActiveSubscription(user_id);
+      if (activeCheck.success && activeCheck.active) {
+        res.status(409).json({
+          success: false,
+          error: 'User already has an active subscription',
+          currentSubscription: activeCheck.data,
+        });
+        return;
+      }
+
       // Configurar el plan de suscripción para DLocal
       const planData: DLocalSubscriptionPlanRequest = {
         name: `${plan.plan_name} - ${user.name}`,
@@ -79,7 +90,8 @@ export class SubscriptionController {
         amount: parseFloat(plan.price),
         currency: plan.currency,
         description: plan.description || plan.plan_name || `Subscription to ${plan.plan_name}`,
-        dlocal_payment_id: dLocalResult.data.subscribe_url ? dLocalResult.data.subscribe_url.split('/').pop() : dLocalResult.data.id.toString(),
+        dlocal_plan_id: String(dLocalResult.data.id),
+        plan_token: dLocalResult.data.plan_token,
       });
 
       if (!paymentResult.success) {
@@ -204,6 +216,113 @@ export class SubscriptionController {
         error: 'Internal server error',
         message: 'Failed to create subscription plan',
       });
+    }
+  }
+
+  /**
+   * Cancelar suscripción de DLocal pasando user_id
+   * Busca el payment activo del usuario, obtiene dlocal_plan_id y subscriptionId
+   */
+  async cancelByUser(req: Request, res: Response): Promise<void> {
+    try {
+      // Allow passing overrides when DB doesn't have all identifiers
+      const { user_id, plan_token: planTokenOverride, subscription_id: subscriptionIdOverride, dlocal_plan_id: dlocalPlanIdOverride } = req.body || {};
+      if (!user_id) {
+        res.status(400).json({ success: false, error: 'user_id is required' });
+        return;
+      }
+
+  // Buscar payment activo (prefiere Completed, luego Active)
+      const paymentResult = await supabaseService.getActivePaymentByUser(user_id);
+      if (!paymentResult.success || !paymentResult.data) {
+        res.status(404).json({ success: false, error: paymentResult.error || 'Active subscription not found' });
+        return;
+      }
+
+      const payment = paymentResult.data;
+      // Buscar identificadores en payment o overrides
+      let planId: string | undefined = dlocalPlanIdOverride || payment.dlocal_plan_id || payment.dLocal_plan_id || payment.dlocal_plan || payment.dlocal_plan_token;
+      const planToken: string | undefined = planTokenOverride || payment.plan_token;
+      let subscriptionId: string | undefined = subscriptionIdOverride || payment.dlo_payment_id || payment.subscription_id || payment.subscription_token;
+
+      // Si faltan, intentar encontrarlos en pagos recientes
+      if (!planId || !subscriptionId) {
+        const findIds = await supabaseService.findPlanAndSubscriptionForUser(user_id);
+        if (findIds.success) {
+          planId = planId || findIds.data?.planId;
+          subscriptionId = subscriptionId || findIds.data?.subscriptionId;
+        }
+      }
+
+      // Si aún no hay planId pero sí hay planToken, intentar resolverlo desde DLocal
+      if (!planId && planToken) {
+        try {
+          const plansPage = await dLocalSubscriptionService.getAllPlans(1, 50);
+          if (plansPage.success && plansPage.data?.data?.length) {
+            const match = plansPage.data.data.find((p: any) => p.plan_token === planToken);
+            if (match?.id) {
+              planId = String(match.id);
+            }
+          }
+        } catch (e) {
+          // ignore, fallback below will handle
+        }
+      }
+
+      // Si seguimos sin planId, tratar de obtenerlo desde la suscripción en DLocal
+      if (!planId && subscriptionId) {
+        const subInfo = await dLocalSubscriptionService.getSubscription(String(subscriptionId));
+        if (subInfo.success && subInfo.data?.plan?.id) {
+          planId = String(subInfo.data.plan.id);
+        }
+      }
+
+      if (!subscriptionId) {
+        res.status(400).json({ success: false, error: 'Missing subscription id/token. Pass subscription_id in body to override.' });
+        return;
+      }
+
+      // Intentar cancelar con plan+subscription si tenemos ambos; si no, usar solo subscription
+      if (!planId) {
+        res.status(400).json({
+          success: false,
+          error: 'Missing DLocal plan id',
+          message: 'Could not resolve plan id from DB, plan token, or DLocal subscription lookup',
+          details: { planToken, subscriptionId }
+        });
+        return;
+      }
+      const cancelResult = await dLocalSubscriptionService.cancelSubscription(String(planId), String(subscriptionId));
+      if (!cancelResult.success) {
+        res.status(400).json({
+          success: false,
+          error: cancelResult.error || 'DLocal API error',
+          message: cancelResult.message,
+          details: {
+            attemptedPlanId: planId,
+            planToken,
+            subscriptionId,
+          },
+          dlocal: cancelResult.data,
+        });
+        return;
+      }
+
+  // Marcar payment como Cancelled
+  const updateResult = await supabaseService.setPaymentStatusByIdxOrUser({ userId: user_id, newStatus: 'Cancelled' });
+  // Además, desvincular el plan del usuario (plan_id = null)
+  const userNullPlan = await supabaseService.updateUserPlan(user_id, null);
+
+      res.status(200).json({
+        success: true,
+        message: 'Subscription cancelled',
+        dlocal: cancelResult.data,
+  payment: updateResult.success ? updateResult.data : undefined,
+  user: userNullPlan.success ? userNullPlan.data : undefined,
+      });
+    } catch (error: any) {
+      console.error('Error in cancelByUser:', error);
+      res.status(500).json({ success: false, error: 'Internal server error', message: error.message });
     }
   }
 
